@@ -1,0 +1,2104 @@
+---
+title: "Comipems Data Report"
+format: pdf
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{python}
+#| label: cell-1
+#| echo: false
+#| warning: false
+#| message: false
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from pathlib import Path
+import matplotlib.cm as cm
+import seaborn as sns
+```
+
+```{python}
+#| label: cell-2
+#| echo: false
+#| warning: false
+#| message: false
+# CARGA DE BASES DE DATOS
+
+sus19 = pd.read_parquet("2019/bd_sustentantes_2019.parquet")
+enc19 = pd.read_parquet("2019/bd_sustentantes_2019_encuesta.parquet")
+opc19 = pd.read_parquet("2019/bd_opciones_educativas_2019.parquet")
+
+sus20 = pd.read_parquet("2020/bd_sustentantes_2020.parquet")
+enc20 = pd.read_parquet("2020/bd_sustentantes_2020_encuesta.parquet")
+opc20 = pd.read_parquet("2020/bd_opciones_educativas_2020.parquet")
+
+sus21 = pd.read_parquet("2021/bd_sustentantes_2021.parquet")
+enc21 = pd.read_parquet("2021/bd_sustentantes_2021_encuesta.parquet")
+opc21 = pd.read_parquet("2021/bd_opciones_educativas_2021.parquet")
+
+sus22 = pd.read_parquet("2022/bd_sustentantes_2022.parquet")
+enc22 = pd.read_parquet("2022/bd_sustentantes_2022_encuesta.parquet")
+opc22 = pd.read_parquet("2022/bd_opciones_educativas_2022.parquet")
+
+sus23 = pd.read_parquet("2023/bd_sustentantes_2023.parquet")
+enc23 = pd.read_parquet("2023/bd_sustentantes_2023_encuesta.parquet")
+opc23 = pd.read_parquet("2023/bd_opciones_educativas_2023.parquet")
+```
+
+### Aspirantes registrados por año
+
+```{python}
+#| label: cell-3
+#| echo: false
+#| warning: false
+#| message: false
+sus23['SUS_SEXO'] = sus23['SEXO']
+
+# Bases de datos
+sus1923 = [
+    (2019, sus19),
+    (2020, sus20),
+    (2021, sus21),
+    (2022, sus22),
+    (2023, sus23)
+]
+
+# Bases de datos encuesta
+enc1923 = [
+    (2019, enc19),
+    (2020, enc20),
+    (2021, enc21),
+    (2022, enc22),
+    (2023, enc23)
+]
+
+# Presentaron examen
+pres19 = sus19[sus19['PRE_EXA'] == 'S'].copy()
+pres20 = sus20[sus20['PRE_EXA'] == 'S'].copy()
+pres21 = sus21[sus21['PRE_EXA'] == 'S'].copy()
+pres22 = sus22[sus22['PRE_EXA'] == 'S'].copy()
+pres23 = sus23[sus23['PRE_EXA'] == 'S'].copy()
+
+pres1923 = [
+    (2019, pres19),
+    (2020, pres20),
+    (2021, pres21),
+    (2022, pres22),
+    (2023, pres23)
+]
+# Aceptados en el colbach
+colbach = pd.concat(
+    [
+        df[df['ASIG_FIN'].fillna('').str.startswith('B0')].assign(AÑO=año)
+        for año, df in sus1923
+    ],
+    ignore_index=True
+)
+
+
+# Colbach8
+colbach8 = pd.concat(
+    [df[df['ASIG_FIN'] == 'B008000'].assign(AÑO=año) for año, df in sus1923],
+    ignore_index=True
+)
+```
+
+### Aspirantes por año
+
+```{python}
+#| label: cell-5
+#| echo: false
+#| warning: false
+#| message: false
+datos_agrupados = pd.DataFrame(
+    [(año, round(len(lista),1)) for año, lista in sus1923],
+    columns=["Año", "Número de aspirantes"]
+)
+
+datos_agrupados.to_csv("Tablas/1.1 Aspirantes",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-6
+#| echo: false
+#| warning: false
+#| message: false
+plt.figure(figsize=(12,6))
+bars = plt.bar(datos_agrupados["Año"], datos_agrupados["Número de aspirantes"])
+plt.xlabel("Año")
+plt.ylabel("Número de aspirantes")
+plt.title("Número de aspirantes por año")
+plt.xticks(datos_agrupados["Año"])
+plt.grid(axis='y')
+
+for bar in bars:
+    height = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+             f'{height}',
+             ha='center', va='bottom', fontsize=10)
+
+plt.show()
+```
+
+### Concursantes que no cumplieron algún requisito por año
+
+```{python}
+#| label: cell-7
+#| echo: false
+#| warning: false
+#| message: false
+# EXPL_ASI: EXPLICACIÓN DESPUÉS DE HABER CORRIDO EL PROCESO DE ASIGNACIÓN EN EL CENEVAL
+
+# <31	Menor a 31 aciertos
+# ASI	Obtuvo un lugar en el proceso de asignación
+# CDO	Con Derecho a otra Opción
+# NP	No presentó examen
+# SC	Sin certificado
+# BI	Baja por infracción
+
+
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            len(datos), 
+            (datos['EXPL_ASI'] == 'NP').sum(),
+            ((datos['EXPL_ASI'] == 'NP').mean() * 100).round(2),
+            (datos['EXPL_ASI'] == 'BI').sum(), 
+            ((datos['EXPL_ASI'] == 'BI').mean() * 100).round(2)
+        )
+        for año, datos in sus1923
+    ],
+    columns=["Año", "Total", "No presentó", "%NP", "Baja por infracción", "%BI"]
+)
+
+datos_agrupados.to_csv("Tablas/1.2 NoCumplieronRequisito",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-8
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"])) 
+width = 0.35 
+
+
+plt.figure(figsize=(12,6))
+
+
+plt.bar(x - width/2, datos_agrupados["%NP"], width, label="No presentó", color='tab:blue')
+plt.bar(x + width/2, datos_agrupados["%BI"], width, label="Baja por infracción", color='tab:orange')
+
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Concursantes que no cumplieron algún requisito por año")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 10)
+plt.legend()
+plt.grid(axis='y')
+
+for i in range(len(x)):
+    plt.text(x[i] - width/2, datos_agrupados["%NP"][i] + 0.1, f'{datos_agrupados["%NP"][i]:.1f}%', ha='center', va='bottom')
+    plt.text(x[i] + width/2, datos_agrupados["%BI"][i] + 0.1, f'{datos_agrupados["%BI"][i]:.1f}%', ha='center', va='bottom')
+
+plt.show()
+```
+
+### Concursantes que cumplieron todos los requisitos por año
+
+```{python}
+#| label: cell-9
+#| echo: false
+#| warning: false
+#| message: false
+# EXPL_ASI: EXPLICACIÓN DESPUÉS DE HABER CORRIDO EL PROCESO DE ASIGNACIÓN EN EL CENEVAL
+
+# <31	Menor a 31 aciertos
+# ASI	Obtuvo un lugar en el proceso de asignación
+# CDO	Con Derecho a otra Opción
+# NP	No presentó examen
+# SC	Sin certificado
+# BI	Baja por infracción
+
+
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            len(datos), 
+            (datos['EXPL_ASI'] == 'ASI').sum(),
+            round((datos['EXPL_ASI'] == 'ASI').sum() /
+                  ((datos['EXPL_ASI'] == 'ASI').sum() + (datos['EXPL_ASI'] == 'CDO').sum()) * 100, 2),
+            (datos['EXPL_ASI'] == 'CDO').sum(),
+            
+            round((datos['EXPL_ASI'] == 'CDO').sum() /
+                  ((datos['EXPL_ASI'] == 'ASI').sum() + (datos['EXPL_ASI'] == 'CDO').sum()) * 100, 2)
+        )
+        for año, datos in sus1923
+    ],
+    columns=["Año", "Total", "Obtuvo un lugar", "%ASI", "Derecho a otra opción", "%CDO"]
+)
+
+datos_agrupados.to_csv("Tablas/1.3 CumplieronRequisitos",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-10
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"])) 
+width = 0.35 
+
+
+plt.figure(figsize=(12,6))
+
+
+plt.bar(x - width/2, datos_agrupados["%ASI"], width, label="Obtuvo un lugar", color='tab:blue')
+plt.bar(x + width/2, datos_agrupados["%CDO"], width, label="Derecho a otra opción", color='tab:orange')
+
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Porcentaje de asignados y no asignados")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 100)
+plt.legend()
+plt.grid(axis='y')
+
+for i in range(len(x)):
+    plt.text(x[i] - width/2, datos_agrupados["%ASI"][i] + 0.1, f'{datos_agrupados["%ASI"][i]:.1f}%', ha='center', va='bottom')
+    plt.text(x[i] + width/2, datos_agrupados["%CDO"][i] + 0.1, f'{datos_agrupados["%CDO"][i]:.1f}%', ha='center', va='bottom')
+
+plt.show()
+```
+
+### Concursantes que obtuvieron un lugar por año
+
+```{python}
+#| label: cell-11
+#| echo: false
+#| warning: false
+#| message: false
+# NOPC_ASI: Número de opción asignada
+# Del 1 al 20
+
+# NOPC_FIN: Número de opción asignada después de CDO
+# Del 1 al 20
+
+```
+
+```{python}
+#| label: cell-12
+#| echo: false
+#| warning: false
+#| message: false
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            total := len(datos),
+            primera := (datos["NOPC_FIN"] == 1).sum(),
+            round(primera / total * 100, 2),
+            primeras5 := (datos["NOPC_FIN"].between(1, 5)).sum(),
+            round(primeras5 / total * 100, 2),
+            posteriores := (datos["NOPC_FIN"].between(6, 20)).sum(),
+            round(posteriores / total * 100, 2)
+        )
+        for año, datos in sus1923
+    ],
+    columns=[
+        "Año", 
+        "Total", 
+        "Primera opción", "%Primera", 
+        "Primeras 5 opciones", "%Primeras 5", 
+        "Opciones posteriores", "%Posteriores"
+    ]
+)
+
+datos_agrupados.to_csv("Tablas/1.4 ObtuvieronLugar",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-13
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"])) 
+width = 0.25 
+
+plt.figure(figsize=(12,6))
+
+
+plt.bar(x - width, datos_agrupados["%Primera"], width, label="Primera opción", color='tab:blue')
+plt.bar(x, datos_agrupados["%Primeras 5"], width, label="Primeras 5 opciones", color='tab:orange')
+plt.bar(x + width, datos_agrupados["%Posteriores"], width, label="Posteriores opciones", color='tab:green')
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Concursantes que obtuvieron un lugar por año")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 100)
+plt.legend()
+plt.grid(axis='y')
+
+for i in range(len(x)):
+    plt.text(x[i] - width, datos_agrupados["%Primera"][i] + 1, f'{datos_agrupados["%Primera"][i]:.1f}%', ha='center', va='bottom')
+    plt.text(x[i], datos_agrupados["%Primeras 5"][i] + 1, f'{datos_agrupados["%Primeras 5"][i]:.1f}%', ha='center', va='bottom')
+    plt.text(x[i] + width, datos_agrupados["%Posteriores"][i] + 1, f'{datos_agrupados["%Posteriores"][i]:.1f}%', ha='center', va='bottom')
+
+plt.show()
+```
+
+#### Concursantes que obtuvieron un lugar por año (Colbach)
+
+```{python}
+#| label: cell-14
+#| echo: false
+#| warning: false
+#| message: false
+def resumen_asignados(asignados, total):
+    return pd.DataFrame(
+        [
+            (
+                año,
+                total_ := len(total_df),
+                asign_ := len(asignados_df),
+                round(asign_/total_*100, 2)
+            )
+            for año, total_df in total.groupby("AÑO")
+            for asignados_df in [asignados[asignados["AÑO"]==año]]
+        ],
+        columns=["Año", "Total_presentaron", "Asignados", "%Asignados"]
+    )
+
+
+datos_agrupados_colbach = resumen_asignados(colbach, pd.concat([df.assign(AÑO=año) for año, df in pres1923], ignore_index=True))
+
+datos_agrupados_colbach.to_csv("Tablas/1.4.1 ObtuvieronLugarCol",index=False)
+
+datos_agrupados_colbach
+```
+
+```{python}
+#| label: cell-15
+#| echo: false
+#| warning: false
+#| message: false
+plt.figure(figsize=(10, 6))
+bars = plt.bar(
+    datos_agrupados_colbach["Año"].astype(str),
+    datos_agrupados_colbach["Asignados"]
+)
+plt.title("Porcentaje de sustentantes asignados a Colbach por año")
+plt.xlabel("Año")
+plt.ylabel("Asignados")
+plt.ylim(0, 50000)
+plt.grid(axis='y')
+
+for bar, pct in zip(bars, datos_agrupados_colbach["Asignados"]):
+    plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1, f"{pct}", ha='center', va='bottom')
+
+plt.show()
+```
+
+#### Concursantes que obtuvieron un lugar por año (Colbach8)
+
+```{python}
+#| label: cell-16
+#| echo: false
+#| warning: false
+#| message: false
+datos_agrupados_colbach8 = resumen_asignados(colbach8, pd.concat([df.assign(AÑO=año) for año, df in pres1923], ignore_index=True))
+
+datos_agrupados_colbach8.to_csv("Tablas/1.4.2 ObtuvieronLugarCol8",index=False)
+datos_agrupados_colbach8
+```
+
+```{python}
+#| label: cell-17
+#| echo: false
+#| warning: false
+#| message: false
+plt.figure(figsize=(8, 5))
+bars = plt.bar(
+    datos_agrupados_colbach8["Año"].astype(str),
+    datos_agrupados_colbach8["Asignados"]
+)
+plt.title("Porcentaje de sustentantes asignados a Colbach 8 por año")
+plt.xlabel("Año")
+plt.ylabel("Asignados")
+plt.ylim(0, 1500)
+plt.grid(axis='y')
+
+for bar, pct in zip(bars, datos_agrupados_colbach8["Asignados"]):
+    plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01, f"{pct}", ha='center', va='bottom')
+
+plt.show()
+```
+
+### Concursantes que obtuvieron un lugar según la escuela de procedencia por año
+
+```{python}
+#| label: cell-18
+#| echo: false
+#| warning: false
+#| message: false
+# REGI_SEC: Régimen de la secundaria de origen
+# PUB
+# PRI
+
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            total := len(datos), 
+            pub := (datos['REG_PROC'] == 1).sum(),
+            round(pub/total * 100, 2),
+
+            priv := (datos['REG_PROC'] == 2).sum(),
+            round(priv/total * 100, 2)
+        )
+        for año, datos in enc1923
+    ],
+    columns=["Año", "Total", "Escuela Pública", "%PUB", "Escuela Privada", "%PRIV"]
+)
+
+datos_agrupados.to_csv("Tablas/1.5 EscuelaProcedencia",index=False)
+
+datos_agrupados
+```
+
+
+```{python}
+#| label: cell-20
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"])) 
+width = 0.35 
+
+
+plt.figure(figsize=(12,6))
+
+
+plt.bar(x - width/2, datos_agrupados["%PUB"], width, label="Pública", color='tab:blue')
+plt.bar(x + width/2, datos_agrupados["%PRIV"], width, label="Particular", color='tab:orange')
+
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Tipo de escuela de procedencia")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 100)
+plt.legend()
+plt.grid(axis='y')
+
+for i in range(len(x)):
+    plt.text(x[i] - width/2, datos_agrupados["%PUB"][i] + 0.1, f'{datos_agrupados["%PUB"][i]:.1f}%', ha='center', va='bottom')
+    plt.text(x[i] + width/2, datos_agrupados["%PRIV"][i] + 0.1, f'{datos_agrupados["%PRIV"][i]:.1f}%', ha='center', va='bottom')
+
+plt.show()
+```
+
+#### Concursantes que obtuvieron un lugar según la escuela de procedencia por año (Colbach)
+
+```{python}
+#| label: cell-21
+#| echo: false
+#| warning: false
+#| message: false
+encuestas = pd.concat(
+    [df.assign(AÑO=año) for año, df in enc1923],
+    ignore_index=True
+)
+colbach_enc = pd.merge(
+    colbach,
+    encuestas,
+    on=["FOLIO", "AÑO"],  
+    how="inner"           
+)
+```
+
+```{python}
+#| label: cell-22
+#| echo: false
+#| warning: false
+#| message: false
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            total := len(datos),
+            pub := (datos['REG_PROC'] == 1).sum(),
+            round(pub/total * 100, 2),
+
+            priv := (datos['REG_PROC'] == 2).sum(),
+            round(priv/total * 100, 2)
+        )
+        for año, datos in colbach_enc.groupby("AÑO")
+    ],
+    columns=["Año", "Total", "Escuela Pública", "%PUB", "Escuela Privada", "%PRIV"],
+)
+
+datos_agrupados.to_csv("Tablas/1.5.1 EscuelaProcedenciaCol",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-23
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"]))
+width = 0.35
+
+plt.figure(figsize=(10, 6))
+
+plt.bar(
+    x - width / 2,
+    datos_agrupados["%PUB"],
+    width,
+    label="Pública",
+    color="tab:blue",
+)
+plt.bar(
+    x + width / 2,
+    datos_agrupados["%PRIV"],
+    width,
+    label="Particular",
+    color="tab:orange",
+)
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Tipo de escuela de procedencia (Colbach, 2021-2022)")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 100)
+plt.legend()
+plt.grid(axis="y")
+
+
+for i in range(len(x)):
+    plt.text(
+        x[i] - width / 2,
+        datos_agrupados["%PUB"][i] + 0.1,
+        f'{datos_agrupados["%PUB"][i]:.1f}%',
+        ha="center",
+        va="bottom",
+    )
+    plt.text(
+        x[i] + width / 2,
+        datos_agrupados["%PRIV"][i] + 0.1,
+        f'{datos_agrupados["%PRIV"][i]:.1f}%',
+        ha="center",
+        va="bottom",
+    )
+
+plt.show()
+```
+
+#### Concursantes que obtuvieron un lugar según la escuela de procedencia por año (Colbach 8)
+
+```{python}
+#| label: cell-24
+#| echo: false
+#| warning: false
+#| message: false
+encuestas = pd.concat(
+    [df.assign(AÑO=año) for año, df in enc1923],
+    ignore_index=True
+)
+colbach8_enc = pd.merge(
+    colbach8,
+    encuestas,
+    on=["FOLIO", "AÑO"],  
+    how="inner"           
+)
+```
+
+```{python}
+#| label: cell-25
+#| echo: false
+#| warning: false
+#| message: false
+colbach8_2122 = colbach8[colbach8["AÑO"].isin([2021, 2022])]
+
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            total := len(datos),
+            pub := (datos['REG_PROC'] == 1).sum(),
+            round(pub/total * 100, 2),
+
+            priv := (datos['REG_PROC'] == 2).sum(),
+            round(priv/total * 100, 2)
+        )
+        for año, datos in colbach8_enc.groupby("AÑO")
+    ],
+    columns=["Año", "Total", "Escuela Pública", "%PUB", "Escuela Privada", "%PRIV"],
+)
+
+datos_agrupados.to_csv("Tablas/1.5.2 EscuelaProcedenciaCol8",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-26
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"]))
+width = 0.35
+
+plt.figure(figsize=(10, 6))
+
+plt.bar(
+    x - width / 2,
+    datos_agrupados["%PUB"],
+    width,
+    label="Pública",
+    color="tab:blue",
+)
+plt.bar(
+    x + width / 2,
+    datos_agrupados["%PRIV"],
+    width,
+    label="Particular",
+    color="tab:orange",
+)
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Tipo de escuela de procedencia (Colbach8, 2021-2022)")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 100)
+plt.legend()
+plt.grid(axis="y")
+
+
+for i in range(len(x)):
+    plt.text(
+        x[i] - width / 2,
+        datos_agrupados["%PUB"][i] + 0.1,
+        f'{datos_agrupados["%PUB"][i]:.1f}%',
+        ha="center",
+        va="bottom",
+    )
+    plt.text(
+        x[i] + width / 2,
+        datos_agrupados["%PRIV"][i] + 0.1,
+        f'{datos_agrupados["%PRIV"][i]:.1f}%',
+        ha="center",
+        va="bottom",
+    )
+
+plt.show()
+```
+
+### Concursantes divididos por sexo por año
+
+```{python}
+#| label: cell-27
+#| echo: false
+#| warning: false
+#| message: false
+# SUS_SEXO: SEXO DEL SUSTENTANTE
+# H
+# M
+# 2023: SEXO
+
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            
+            año,
+            total := len(datos), 
+            hombre := (datos['SUS_SEXO'] == 'H').sum(),
+            round(hombre/total * 100, 2),
+
+            mujer := (datos['SUS_SEXO'] == 'M').sum(),
+            round(mujer/total * 100, 2)
+        )
+        for año, datos in sus1923
+    ],
+    columns=["Año", "Total", "Hombre", "%H", "Mujer", "%M"]
+)
+
+datos_agrupados.to_csv("Tablas/1.6 DistribucionSexo",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-28
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"])) 
+width = 0.35 
+
+
+plt.figure(figsize=(12,6))
+
+
+plt.bar(x - width/2, datos_agrupados["%H"], width, label="Hombre", color='tab:blue')
+plt.bar(x + width/2, datos_agrupados["%M"], width, label="Mujer", color='tab:orange')
+
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Sexo del aspirante por año")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 100)
+plt.legend()
+plt.grid(axis='y')
+
+for i in range(len(x)):
+    plt.text(x[i] - width/2, datos_agrupados["%H"][i] + 0.1, f'{datos_agrupados["%H"][i]:.1f}%', ha='center', va='bottom')
+    plt.text(x[i] + width/2, datos_agrupados["%M"][i] + 0.1, f'{datos_agrupados["%M"][i]:.1f}%', ha='center', va='bottom')
+
+plt.show()
+```
+
+#### Concursantes divididos por sexo por año (Colbach)
+
+```{python}
+#| label: cell-29
+#| echo: false
+#| warning: false
+#| message: false
+colbach = colbach.loc[:, ~colbach.columns.duplicated()]
+
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            total := len(datos),
+            hombre := (datos['SUS_SEXO'] == 'H').sum(),
+            round(hombre / total * 100, 2),
+            mujer := (datos['SUS_SEXO'] == 'M').sum(),
+            round(mujer / total * 100, 2)
+        )
+        for año, datos in colbach.groupby("AÑO")
+    ],
+    columns=["Año", "Total", "Hombre", "%H", "Mujer", "%M"]
+)
+datos_agrupados.to_csv("Tablas/1.6.1 DistribucionSexoCol",index=False)
+datos_agrupados
+```
+
+```{python}
+#| label: cell-30
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"]))
+width = 0.35
+
+plt.figure(figsize=(12, 6))
+
+plt.bar(x - width / 2, datos_agrupados["%H"], width, label="Hombre", color="tab:blue")
+plt.bar(x + width / 2, datos_agrupados["%M"], width, label="Mujer", color="tab:orange")
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Sexo del aspirante (Colbach)")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 100)
+plt.legend()
+plt.grid(axis="y")
+
+for i in range(len(x)):
+    plt.text(
+        x[i] - width / 2,
+        datos_agrupados["%H"][i] + 0.1,
+        f'{datos_agrupados["%H"][i]:.1f}%',
+        ha="center",
+        va="bottom",
+    )
+    plt.text(
+        x[i] + width / 2,
+        datos_agrupados["%M"][i] + 0.1,
+        f'{datos_agrupados["%M"][i]:.1f}%',
+        ha="center",
+        va="bottom",
+    )
+
+plt.show()
+```
+
+#### Concursantes divididos por sexo por año (Colbach 8)
+
+```{python}
+#| label: cell-31
+#| echo: false
+#| warning: false
+#| message: false
+colbach8 = colbach8.loc[:, ~colbach8.columns.duplicated()]
+
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            total := len(datos),
+            hombre := (datos['SUS_SEXO'] == 'H').sum(),
+            round(hombre / total * 100, 2),
+            mujer := (datos['SUS_SEXO'] == 'M').sum(),
+            round(mujer / total * 100, 2)
+        )
+        for año, datos in colbach8.groupby("AÑO")
+    ],
+    columns=["Año", "Total", "Hombre", "%H", "Mujer", "%M"]
+)
+datos_agrupados.to_csv("Tablas/1.6.2 DistribucionSexoCol8",index=False)
+datos_agrupados
+```
+
+```{python}
+#| label: cell-32
+#| echo: false
+#| warning: false
+#| message: false
+x = np.arange(len(datos_agrupados["Año"]))
+width = 0.35
+
+plt.figure(figsize=(12, 6))
+
+plt.bar(x - width / 2, datos_agrupados["%H"], width, label="Hombre", color="tab:blue")
+plt.bar(x + width / 2, datos_agrupados["%M"], width, label="Mujer", color="tab:orange")
+
+plt.xlabel("Año")
+plt.ylabel("Porcentaje (%)")
+plt.title("Sexo del aspirante (Colbach8)")
+plt.xticks(x, datos_agrupados["Año"])
+plt.ylim(0, 100)
+plt.legend()
+plt.grid(axis="y")
+
+for i in range(len(x)):
+    plt.text(
+        x[i] - width / 2,
+        datos_agrupados["%H"][i] + 0.1,
+        f'{datos_agrupados["%H"][i]:.1f}%',
+        ha="center",
+        va="bottom",
+    )
+    plt.text(
+        x[i] + width / 2,
+        datos_agrupados["%M"][i] + 0.1,
+        f'{datos_agrupados["%M"][i]:.1f}%',
+        ha="center",
+        va="bottom",
+    )
+
+plt.show()
+```
+
+### Promedio de aciertos por año
+
+```{python}
+#| label: cell-33
+#| echo: false
+#| warning: false
+#| message: false
+datos_agrupados = pd.DataFrame(
+    [
+        (
+            año,
+            total := len(datos),
+            round(datos['NGLOBAL'].mean()),
+            round(datos['NGLOBAL'].var(), 2),
+            round(datos['NGLOBAL'].std(), 2)
+
+        )
+        for año, datos in pres1923
+    ],
+    columns=["Año", "Total", "Promedio de aciertos", "Varianza", "DesvEst"]
+)
+
+datos_agrupados.to_csv("Tablas/1.7 Aciertos",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-34
+#| echo: false
+#| warning: false
+#| message: false
+df_todos = pd.concat([df.assign(Año=año) for año, df in pres1923])
+
+plt.figure(figsize=(10, 6))
+sns.boxplot(x="Año", y="NGLOBAL", data=df_todos)
+
+plt.title("Distribución de aciertos por año (Boxplot)", fontsize=14)
+plt.xlabel("Año")
+plt.ylabel("Número de aciertos")
+plt.grid(axis="y", linestyle="--", alpha=0.7)
+plt.show()
+```
+
+#### Promedio de aciertos por año (Colbach) (Pendiente: Agregar varianza violin o bigote)
+
+```{python}
+#| label: cell-35
+#| echo: false
+#| warning: false
+#| message: false
+datos_agrupados = pd.DataFrame(
+    [
+        (
+   
+            año,
+            total := len(datos), 
+            round(datos['NGLOBAL'].mean()),
+            round(datos['NGLOBAL'].var(), 2),
+            round(datos['NGLOBAL'].std(), 2)
+
+        )
+        for año, datos in colbach.groupby("AÑO")
+    ],
+    columns=["Año", "Total", "Promedio de aciertos", "Varianza", "DesvEst"]
+)
+
+datos_agrupados.to_csv("Tablas/1.7.1 AciertosCol",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-36
+#| echo: false
+#| warning: false
+#| message: false
+plt.figure(figsize=(10, 6))
+sns.boxplot(x="AÑO", y="NGLOBAL", data=colbach)
+
+plt.title("Distribución de aciertos por año (Boxplot)", fontsize=14)
+plt.xlabel("Año")
+plt.ylabel("Número de aciertos")
+plt.grid(axis="y", linestyle="--", alpha=0.7)
+plt.show()
+```
+
+#### Promedio de aciertos por año (Colbach 8)
+
+```{python}
+#| label: cell-37
+#| echo: false
+#| warning: false
+#| message: false
+datos_agrupados = pd.DataFrame(
+    [
+        (
+   
+            año,
+            total := len(datos), 
+            round(datos['NGLOBAL'].mean()),
+            round(datos['NGLOBAL'].var(), 2),
+            round(datos['NGLOBAL'].std(), 2)
+
+        )
+        for año, datos in colbach8.groupby("AÑO")
+    ],
+    columns=["Año", "Total", "Promedio de aciertos", "Varianza", "DesvEst"]
+)
+
+datos_agrupados.to_csv("Tablas/1.7.2 AciertosCol8",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-38
+#| echo: false
+#| warning: false
+#| message: false
+plt.figure(figsize=(10, 6))
+sns.boxplot(x="AÑO", y="NGLOBAL", data=colbach8)
+
+plt.title("Distribución de aciertos por año (Boxplot)", fontsize=14)
+plt.xlabel("Año")
+plt.ylabel("Número de aciertos")
+plt.grid(axis="y", linestyle="--", alpha=0.7)
+plt.show()
+```
+
+### Número de opciones por institución
+
+```{python}
+#| label: cell-39
+#| echo: false
+#| warning: false
+#| message: false
+opc1923 = [
+    (2019, opc19),
+    (2020, opc20),
+    (2021, opc21),
+    (2022, opc22),
+    (2023, opc23)
+]
+```
+
+```{python}
+#| label: cell-40
+#| echo: false
+#| warning: false
+#| message: false
+# Diccionario de claves
+
+clvinst ={
+'B0':	'Bachilleres',
+'C1':	'CONALEP',
+'G2':	'Dirección General del Bachillerato',
+'A3':	'UEMSTAyCM CBTA',
+'D4':	'UEMSTIS',
+'I5':	'IPN',
+'U6':	'UNAM',
+'S0':	'SE - COBAEM',
+'S1':	'SE - CONALEP ESTADO DE MÉXICO',
+'S2':	'SE - TELEBACHILLERATO',
+'S4':	'SE - CBT',
+'S5':	'SE - CECYTEM',
+'S7':	'SE - P.O.',
+'S8':	'SE - P.O.',
+'M9':	'UAEM',
+'T3':	'UEMSTAyCM CMM'
+}
+```
+
+```{python}
+#| label: cell-41
+#| echo: false
+#| warning: false
+#| message: false
+dict_opc = dict(opc1923)
+
+resumen = []
+
+for year, df in dict_opc.items():
+    conteo = df['CVE_INST'].value_counts() # Clave de la institución
+
+    for clave, cantidad in conteo.items():
+        nombre = clvinst.get(clave, "Desconocido")  
+        resumen.append({
+            "Año": year,
+            "Clave": clave,
+            "Nombre": nombre,
+            "Numero de opciones educativas": cantidad
+        })
+
+datos_agrupados = pd.DataFrame(resumen)
+datos_agrupados = datos_agrupados.sort_values(["Año", "Clave"]).reset_index(drop=True)
+
+datos_agrupados = datos_agrupados.pivot_table(
+    index=["Clave", "Nombre"],             
+    columns="Año",                          
+    values="Numero de opciones educativas", 
+    fill_value=0                           
+).reset_index()
+
+datos_agrupados.to_csv("Tablas/1.8 OpcionesEducativas",index=False)
+
+datos_agrupados
+```
+
+### Tabla 1.1 Distribución de concursantes con base en su primera preferencia
+
+```{python}
+#| label: cell-42
+#| echo: false
+#| warning: false
+#| message: false
+# OPC_ED01 contiene la primera opción escogida por el alumno
+dict_sus = dict(sus1923)
+
+resumen_sus = []
+
+for year, df in dict_sus.items():
+    # Extraer los dos primeros caracteres de la clave
+    claves_cortas = df['OPC_ED01'].astype(str).str[:2]
+    
+    conteo = claves_cortas.value_counts()
+    
+    for clave, cantidad in conteo.items():
+        nombre = clvinst.get(clave, "Desconocido")
+        resumen_sus.append({
+            "Año": year,
+            "Clave": clave,
+            "Nombre": nombre,
+            "Numero de instituciones": cantidad
+        })
+
+datos_agrupados = pd.DataFrame(resumen_sus)
+
+tabla_conteos = datos_agrupados.pivot_table(
+    index=["Clave", "Nombre"],
+    columns="Año",
+    values="Numero de instituciones",
+    fill_value=0
+)
+
+tabla_porcentajes = (tabla_conteos.div(tabla_conteos.sum(axis=0), axis=1) * 100).round(2)
+tabla_porcentajes = tabla_porcentajes.add_suffix("_%")
+datos_agrupados = pd.concat([tabla_conteos, tabla_porcentajes], axis=1).reset_index()
+
+datos_agrupados.to_csv("Tablas/1.9 PrimeraPreferencia",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-43
+#| echo: false
+#| warning: false
+#| message: false
+tabla_grafica = tabla_porcentajes.copy()
+tabla_grafica.columns = tabla_grafica.columns.str.replace("_%", "", regex=False) 
+tabla_grafica_T = tabla_grafica.T.sort_index() 
+
+if hasattr(tabla_grafica_T.columns, "levels") and tabla_grafica_T.columns.nlevels > 1:
+    tabla_grafica_T.columns = [f"{cl} - {nom}" for cl, nom in tabla_grafica_T.columns]
+
+fig, ax = plt.subplots(figsize=(16, 8))
+left = np.zeros(len(tabla_grafica_T), dtype=float)
+
+colors = cm.get_cmap("tab20", len(tabla_grafica_T.columns))
+
+for i, col in enumerate(tabla_grafica_T.columns):
+    vals = tabla_grafica_T[col].to_numpy(dtype=float)
+    bars = ax.barh(
+        tabla_grafica_T.index.astype(str),
+        vals,
+        left=left,
+        label=str(col),
+        color=colors(i) 
+    )
+
+    for bar, val in zip(bars, vals):
+        if val > 0:
+            ax.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                bar.get_y() + bar.get_height() / 2.0,
+                f"{val:.1f}%",
+                ha="center", va="center", fontsize=8, color="white"
+            )
+
+    left += vals
+
+ax.set_xlim(0, 100)
+ax.set_title("Distribución porcentual de instituciones por año")
+ax.set_xlabel("Porcentaje (%)")
+ax.set_ylabel("Año")
+ax.legend(title="Clave — Nombre", bbox_to_anchor=(1.02, 1), loc="upper left")
+plt.tight_layout()
+plt.show()
+```
+
+#### Alumnos registrados en Bachilleres (Primera a decima opción)
+
+```{python}
+#| label: cell-44
+#| echo: false
+#| warning: false
+#| message: false
+dict_sus = dict(sus1923)
+
+resumen_sus = []
+
+for year, df in dict_sus.items():
+    total_20 = 0
+    for i in range(1, 21):
+        col = f"OPC_ED{str(i).zfill(2)}"  # OPC_ED01, OPC_ED02, ...
+        if col in df.columns:
+            # "Empieza con B0"
+            total_20 += df[col].astype(str).fillna("").str.startswith("B0").sum()
+    
+    total_10 = 0
+    for i in range(1, 11):
+        col = f"OPC_ED{str(i).zfill(2)}"
+        if col in df.columns:
+            conteo = df[col].astype(str).fillna("").str.startswith("B0").sum()
+            total_10 += conteo
+            porcentaje = (conteo / total_20 * 100) if total_20 > 0 else 0
+            
+            resumen_sus.append({
+                "Año": year,
+                "Opcion": i,
+                "Alumnos": conteo,
+                "Porcentaje": porcentaje
+            })
+    
+    restantes = total_20 - total_10
+    porcentaje_restante = (restantes / total_20 * 100) if total_20 > 0 else 0
+    
+    resumen_sus.append({
+        "Año": year,
+        "Opcion": "11 a 20",  
+        "Alumnos": restantes,
+        "Porcentaje": porcentaje_restante
+    })
+
+datos_agrupados = pd.DataFrame(resumen_sus)
+
+tabla_conteos = datos_agrupados.pivot_table(
+    index="Opcion",
+    columns="Año",
+    values="Alumnos", 
+    fill_value=0
+)
+
+tabla_porcentajes = datos_agrupados.pivot_table(
+    index="Opcion",
+    columns="Año",
+    values="Porcentaje",
+    fill_value=0
+)
+
+tabla_porcentajes = tabla_porcentajes.add_suffix("_%")
+datos_agrupados = pd.concat([tabla_conteos, tabla_porcentajes], axis=1).reset_index()
+
+datos_agrupados.to_csv("Tablas/1.9.1 Opciones1a20Col",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-45
+#| echo: false
+#| warning: false
+#| message: false
+cols = [str(c) for c in datos_agrupados.columns]
+
+datos_agrupados.columns = cols
+tabla_grafica = datos_agrupados.set_index("Opcion")[[c for c in cols if c.endswith("_%")]]
+tabla_grafica = tabla_grafica.reindex(sorted(tabla_grafica.columns), axis=1)
+tabla_grafica_T = tabla_grafica.T
+tabla_grafica_T.index = [col.replace("_%", "") for col in tabla_grafica_T.index] 
+
+fig, ax = plt.subplots(figsize=(16, 8))
+left = [0] * len(tabla_grafica_T)
+
+for opcion in tabla_grafica_T.columns:
+    values = tabla_grafica_T[opcion]
+    bars = ax.barh(tabla_grafica_T.index, values, left=left, label=f"Opción {opcion}")
+    
+    for i, (x, w) in enumerate(zip(left, values)):
+        if w > 0:
+            ax.text(x + w/2, i, f'{w:.1f}%', ha='center', va='center', fontsize=8, color="white")
+    
+    left = [x + y for x, y in zip(left, values)]
+
+ax.set_xlim(0, 100)
+ax.set_xlabel('Porcentaje')
+ax.set_title('Distribución porcentual de Colegio de Bachilleres por opción y año')
+ax.legend(title='Opción registrada', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+```
+
+#### Alumnos registrados en plantel 8 (Primera a decima opción)
+
+```{python}
+#| label: cell-46
+#| echo: false
+#| warning: false
+#| message: false
+dict_sus = dict(sus1923)
+
+resumen_sus = []
+
+for year, df in dict_sus.items():
+    total_20 = 0
+    for i in range(1, 21):
+        col = f"OPC_ED{str(i).zfill(2)}" # OPC_ED01, OPC_ED02, ...
+        if col in df.columns:
+            total_20 += (df[col].astype(str) == "B008000").sum() 
+    
+    total_10 = 0
+    for i in range(1, 11):
+        col = f"OPC_ED{str(i).zfill(2)}"
+        if col in df.columns:
+            conteo = (df[col].astype(str) == "B008000").sum()
+            total_10 += conteo
+            porcentaje = (conteo / total_20 * 100) if total_20 > 0 else 0
+            
+            resumen_sus.append({
+                "Año": year,
+                "Opcion": i,
+                "Alumnos": conteo,
+                "Porcentaje": porcentaje
+            })
+    
+    restantes = total_20 - total_10
+    porcentaje_restante = (restantes / total_20 * 100) if total_20 > 0 else 0
+    
+    resumen_sus.append({
+        "Año": year,
+        "Opcion": "11 a 20",  
+        "Alumnos": restantes,
+        "Porcentaje": porcentaje_restante
+    })
+
+datos_agrupados = pd.DataFrame(resumen_sus)
+
+tabla_conteos = datos_agrupados.pivot_table(
+    index="Opcion",
+    columns="Año",
+    values="Alumnos",
+    fill_value=0
+)
+
+tabla_porcentajes = datos_agrupados.pivot_table(
+    index="Opcion",
+    columns="Año",
+    values="Porcentaje",
+    fill_value=0
+)
+
+tabla_porcentajes = tabla_porcentajes.add_suffix("_%")
+datos_agrupados = pd.concat([tabla_conteos, tabla_porcentajes], axis=1).reset_index()
+
+datos_agrupados.to_csv("Tablas/1.9.2 Opciones1a20Col8",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-47
+#| echo: false
+#| warning: false
+#| message: false
+cols = [str(c) for c in datos_agrupados.columns]
+
+datos_agrupados.columns = cols
+tabla_grafica = datos_agrupados.set_index("Opcion")[[c for c in cols if c.endswith("_%")]]
+tabla_grafica = tabla_grafica.reindex(sorted(tabla_grafica.columns), axis=1)
+tabla_grafica_T = tabla_grafica.T
+tabla_grafica_T.index = [col.replace("_%", "") for col in tabla_grafica_T.index] 
+
+fig, ax = plt.subplots(figsize=(16, 8))
+left = [0] * len(tabla_grafica_T)
+
+for opcion in tabla_grafica_T.columns:
+    values = tabla_grafica_T[opcion]
+    bars = ax.barh(tabla_grafica_T.index, values, left=left, label=f"Opción {opcion}")
+    
+    for i, (x, w) in enumerate(zip(left, values)):
+        if w > 0:
+            ax.text(x + w/2, i, f'{w:.1f}%', ha='center', va='center', fontsize=8, color="white")
+    
+    left = [x + y for x, y in zip(left, values)]
+
+ax.set_xlim(0, 100)
+ax.set_xlabel('Porcentaje')
+ax.set_title('Distribución porcentual de Colegio de Bachilleres plantel 8 por opción y año')
+ax.legend(title='Opción registrada', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| label: cell-48
+#| echo: false
+#| warning: false
+#| message: false
+# Cargamos los catalogos de CCT
+CCT19 = pd.read_parquet("2019/BASICA2019.parquet")
+CCT20 = pd.read_parquet("2020/BASICA2020.parquet")
+CCT21 = pd.read_parquet("2021/BASICA2021.parquet")
+CCT22 = pd.read_parquet("2022/BASICA2022.parquet")
+CCT23 = pd.read_parquet("2023/BASICA2023.parquet")
+```
+
+```{python}
+#| label: cell-49
+#| echo: false
+#| warning: false
+#| message: false
+CCT19 = CCT19[CCT19['NIVEL']=='SECUNDARIA'].copy()
+CCT20 = CCT20[CCT20['NIVEL']=='SECUNDARIA'].copy()
+CCT21 = CCT21[CCT21['NIVEL']=='SECUNDARIA'].copy()
+CCT22 = CCT22[CCT22['NIVEL']=='SECUNDARIA'].copy()
+CCT23 = CCT23[CCT23['NIVEL']=='SECUNDARIA'].copy()
+
+
+dict_cct = {
+    2019: CCT19,
+    2020: CCT20,
+    2021: CCT23,
+    2022: CCT22,
+    2023: CCT23
+}
+sus23['CVE_CCT'] = sus23['CCT']
+
+
+dict_sus = {
+    2019: sus19,
+    2020: sus20,
+    2021: sus21,
+    2022: sus22,
+    2023: sus23
+}
+```
+
+```{python}
+#| label: cell-50
+#| echo: false
+#| warning: false
+#| message: false
+def construir_tabla_categorias(dict_sus, dict_cct):
+    categorias = ["EdoMéx", "CDMX", "Extranjero", "Foráneo"]
+    años = [2019, 2020, 2021, 2022, 2023]
+    resultados = {}
+
+    for year in años:
+        sus = dict_sus[year].copy()
+        cct = dict_cct[year].copy()
+
+        cct_uni = cct.drop_duplicates(subset="CLAVECCT", keep="first")
+
+        mapa_entidad = cct_uni.set_index("CLAVECCT")["ENTIDAD"]
+
+        ent = sus["CVE_CCT"].map(mapa_entidad)
+
+        ent_num = pd.to_numeric(ent, errors="coerce")
+
+        def clasificar(x):
+            if pd.isna(x):
+                return "Extranjero"
+            x = int(x)
+            if x == 15:
+                return "EdoMéx"
+            if x == 9:
+                return "CDMX"
+            if 1 <= x <= 32:
+                return "Foráneo"
+            return "Desconocido"
+
+        categorias_series = ent_num.apply(clasificar)
+
+        conteo = categorias_series.value_counts().reindex(categorias, fill_value=0)
+        resultados[year] = conteo
+
+        total = int(conteo.sum())
+
+    datos_agrupados = pd.DataFrame(resultados).reindex(categorias)
+    return datos_agrupados
+
+datos_agrupados = construir_tabla_categorias(dict_sus, dict_cct)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-51
+#| echo: false
+#| warning: false
+#| message: false
+sus = dict_sus[2021].copy()
+cct = dict_cct[2021].drop_duplicates("CLAVECCT")
+
+mapa = cct.set_index("CLAVECCT")["ENTIDAD"]
+ent = sus["CVE_CCT"].map(mapa)
+
+faltantes = sus.loc[ent.isna(), "CVE_CCT"].unique()
+print(len(faltantes), "CCT no encontrados en catálogo")
+```
+
+### Tabla 2.1 Distribución porcentual de concursantes que obtuvieron un lugar por opción educativa
+
+```{python}
+#| label: cell-52
+#| echo: false
+#| warning: false
+#| message: false
+dict_opc = dict(sus1923)
+
+resumen = []
+
+for year, df in dict_opc.items():
+    conteo = df['INST_FIN'].value_counts()  # Clave de la institución de asignación final
+
+    for clave, cantidad in conteo.items():
+        nombre = clvinst.get(clave, "Desconocido")  
+        resumen.append({
+            "Año": year,
+            "Clave": clave,
+            "Nombre": nombre,
+            "Numero de opciones educativas": cantidad
+        })
+
+datos_agrupados = pd.DataFrame(resumen)
+datos_agrupados = datos_agrupados.sort_values(["Año", "Clave"]).reset_index(drop=True)
+
+datos_agrupados = datos_agrupados.pivot_table(
+    index=["Clave", "Nombre"],             
+    columns="Año",                          
+    values="Numero de opciones educativas", 
+    fill_value=0                           
+).reset_index()
+
+datos_agrupados.columns = datos_agrupados.columns.map(str)
+
+cols_years = [col for col in datos_agrupados.columns if col.isdigit()]
+
+
+for col in cols_years:
+    total = datos_agrupados[col].sum()
+    datos_agrupados[col + "_%"] = (datos_agrupados[col].astype(float) / total * 100).round(2)
+
+new_order = ["Clave", "Nombre"]
+for col in cols_years:
+    new_order.append(col)
+    new_order.append(col + "_%")
+
+datos_agrupados = datos_agrupados[new_order]
+datos_agrupados.to_csv("Tablas/1.10 AsignaciónFinal",index=False)
+datos_agrupados
+```
+
+```{python}
+#| label: cell-53
+#| echo: false
+#| warning: false
+#| message: false
+
+cols_pct = [col for col in datos_agrupados.columns if col.endswith("_%")]
+
+tabla_grafica = datos_agrupados.set_index("Nombre")[cols_pct].T
+
+years = [col.replace("_%", "") for col in tabla_grafica.index]
+
+y_pos = np.arange(len(years))
+
+colors = plt.cm.tab20.colors
+
+fig, ax = plt.subplots(figsize=(16, 8))
+
+left = np.zeros(len(years))
+
+instituciones = datos_agrupados["Nombre"].values
+for i, inst in enumerate(instituciones):
+    values = tabla_grafica.iloc[:, i].values  
+    bars = ax.barh(y_pos, values, left=left, color=colors[i % len(colors)], label=inst)
+    
+    for j, (v, l) in enumerate(zip(values, left)):
+        if v > 2: 
+            ax.text(l + v/2, j, f"{v:.1f}%", ha='center', va='center', color='white', fontsize=9)
+    
+    left += values
+
+ax.set_yticks(y_pos)
+ax.set_yticklabels(years)
+ax.invert_yaxis() 
+ax.set_xlabel("Porcentaje (%)")
+ax.set_title("Distribución porcentual de concursantes que obtuvieron un lugar por opción educativa")
+ax.legend(title="Institución", bbox_to_anchor=(1.05, 1), loc='upper left')
+
+plt.tight_layout()
+plt.show()
+```
+
+#### Distribución porcentual de concursantes que obtuvieron un lugar por opción bachilleres
+
+```{python}
+#| label: cell-54
+#| echo: false
+#| warning: false
+#| message: false
+clv_colbach = {
+    "B001000": "PLANTEL 1, EL ROSARIO",
+    "B002000": "PLANTEL 2, CIEN METROS",
+    "B003000": "PLANTEL 3, IZTACALCO",
+    "B004000": "PLANTEL 4, CULHUACÁN LÁZARO CÁRDENAS",
+    "B005000": "PLANTEL 5, SATÉLITE",
+    "B006000": "PLANTEL 6, VICENTE GUERRERO",
+    "B007000": "PLANTEL 7, IZTAPALAPA",
+    "B008000": "PLANTEL 8, CUAJIMALPA",
+    "B009000": "PLANTEL 9, ARAGÓN",
+    "B010000": "PLANTEL 10, AEROPUERTO",
+    "B011000": "PLANTEL 11, NUEVA ATZACOALCO",
+    "B012000": "PLANTEL 12, NEZAHUALCÓYOTL",
+    "B013000": "PLANTEL 13, XOCHIMILCO TEPEPAN",
+    "B014000": "PLANTEL 14, MILPA ALTA",
+    "B015000": "PLANTEL 15, CONTRERAS",
+    "B016000": "PLANTEL 16, TLÁHUAC",
+    "B017000": "PLANTEL 17, HUAYAMILPAS PEDREGAL",
+    "B018000": "PLANTEL 18, TLILHUACA AZCAPOTZALCO",
+    "B019000": "PLANTEL 19, ECATEPEC",
+    "B020000": "PLANTEL 20, DEL VALLE MATÍAS ROMERO"
+}
+
+
+resumen_colbach = []
+
+for año, df in sus1923:
+    df_colbach = df[df['ASIG_FIN'].fillna('').str.startswith('B0')]
+    conteo = df_colbach['ASIG_FIN'].value_counts() # Asignación final en colbach
+    
+    for clave, cantidad in conteo.items():
+        nombre = clv_colbach.get(clave, "Desconocido")
+        resumen_colbach.append({
+            "Año": año,
+            "Clave": clave,
+            "Nombre": nombre,
+            "Número de asignaciones": cantidad
+        })
+
+df_colbach = pd.DataFrame(resumen_colbach)
+df_colbach = df_colbach.sort_values(["Año", "Clave"]).reset_index(drop=True)
+
+datos_agrupados = df_colbach.pivot_table(
+    index=["Clave", "Nombre"],
+    columns="Año",
+    values="Número de asignaciones",
+    fill_value=0
+).reset_index()
+
+cols_years = [col for col in datos_agrupados.columns if isinstance(col, int)]
+for col in cols_years:
+    total = datos_agrupados[col].sum()
+    datos_agrupados[str(col) + "_%"] = (datos_agrupados[col] / total * 100).round(2)
+
+new_order = ["Clave", "Nombre"]
+for col in cols_years:
+    new_order.append(col)                 
+    new_order.append(str(col) + "_%")    
+df_colbach_pivot = datos_agrupados[new_order]
+
+datos_agrupados.columns = datos_agrupados.columns.map(str)
+
+datos_agrupados.to_csv("Tablas/1.10.1 AsignaciónFinalCol",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-55
+#| echo: false
+#| warning: false
+#| message: false
+cols_pct = [col for col in datos_agrupados.columns if col.endswith("_%")]
+tabla_grafica = datos_agrupados.set_index("Nombre")[cols_pct].T
+years = [col.replace("_%", "") for col in tabla_grafica.index]
+y_pos = np.arange(len(years))
+instituciones = datos_agrupados["Nombre"].values
+colors = plt.cm.tab20.colors
+
+
+fig, ax = plt.subplots(figsize=(16, 8))
+left = np.zeros(len(years))
+
+for i, inst in enumerate(instituciones):
+    values = tabla_grafica.iloc[:, i].values
+    bars = ax.barh(y_pos, values, left=left, color=colors[i % len(colors)], label=inst)
+    
+    for j, (v, l) in enumerate(zip(values, left)):
+        if v > 2:
+            ax.text(l + v/2, j, f"{v:.1f}%", ha='center', va='center', color='white', fontsize=9)
+    
+    left += values
+
+ax.set_yticks(y_pos)
+ax.set_yticklabels(years)
+ax.invert_yaxis()
+ax.set_xlabel("Porcentaje (%)")
+ax.set_title("Distribución acumulativa de asignaciones a colegios de bachilleres por año")
+ax.legend(title="Plantel", bbox_to_anchor=(1.05, 1), loc='upper left')
+
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| label: cell-56
+#| echo: false
+#| warning: false
+#| message: false
+
+```
+
+#### Tabla 3.1 Promedio del número de aciertos obtenido por los sustentantes asignados por opción educativa
+
+```{python}
+#| label: cell-57
+#| echo: false
+#| warning: false
+#| message: false
+resumen_puntajes = []
+
+for year, df in sus1923:
+    if 'NGLOBAL' not in df.columns:
+        continue
+    
+    for clave, grupo in df.groupby('INST_FIN'):
+        nombre = clvinst.get(clave, "Desconocido")
+        minimo = grupo['NGLOBAL'].min() # Minimo de aciertos
+        maximo = grupo['NGLOBAL'].max()# Máximo de aciertos
+        promedio = grupo['NGLOBAL'].mean()# Promedio de aciertos
+        
+        resumen_puntajes.append({
+            "Año": year,
+            "Clave": clave,
+            "Nombre": nombre,
+            "Mínimo": minimo,
+            "Máximo": maximo,
+            "Promedio": round(promedio, 2)
+        })
+
+df_puntajes = pd.DataFrame(resumen_puntajes)
+df_puntajes = df_puntajes.sort_values(["Año", "Clave"]).reset_index(drop=True)
+df_puntajes
+
+estadisticas = ["Mínimo", "Promedio", "Máximo"]
+
+filas = []
+
+for nombre, grupo in df_puntajes.groupby("Nombre"):
+    for stat in estadisticas:
+        fila = {"Puntuaje": stat, "Nombre": nombre}
+        for year in [2019, 2020, 2021, 2022, 2023]:
+            valor = grupo.loc[grupo["Año"] == year, stat].values
+            fila[year] = valor[0] if len(valor) > 0 else None
+        filas.append(fila)
+
+datos_agrupados = pd.DataFrame(filas)
+
+datos_agrupados = datos_agrupados.sort_values(["Nombre", "Puntuaje"]).reset_index(drop=True)
+
+datos_agrupados.to_csv("Tablas/1.11 AciertosCompletos",index=False)
+datos_agrupados
+```
+
+```{python}
+#| label: cell-58
+#| echo: false
+#| warning: false
+#| message: false
+df_promedios = df_puntajes.groupby(["Nombre", "Año"])["Promedio"].mean().reset_index()
+df_promedios_pivot = df_promedios.pivot(index="Nombre", columns="Año", values="Promedio")
+
+instituciones = df_promedios_pivot.index
+x = np.arange(len(instituciones))
+
+plt.figure(figsize=(16, 14))
+
+colors = plt.cm.tab10.colors
+markers = ['o', 's', '^', 'D', 'v']
+
+for i, year in enumerate(df_promedios_pivot.columns):
+    y = df_promedios_pivot[year]
+    plt.plot(x, y, label=str(year), marker=markers[i % len(markers)],
+             color=colors[i % len(colors)], linewidth=2)
+    
+    for xi, yi in zip(x, y):
+        plt.text(xi+0.1, yi + 0.5, f"{yi:.0f}", ha='center', va='bottom', color=colors[i % len(colors)], fontsize=10)
+
+plt.xticks(x, instituciones, rotation=45, ha='right')
+plt.xlabel("Institución")
+plt.ylabel("Número de aciertos (NGLOBAL promedio)")
+plt.title("Comparación de puntajes promedio por institución y año")
+plt.legend(title="Año")
+plt.grid(axis='y')
+plt.tight_layout()
+plt.show()
+```
+
+### Aciertos obtenidos por los sustentantes asignados por opción bachillerato
+
+```{python}
+#| label: cell-59
+#| echo: false
+#| warning: false
+#| message: false
+estadisticas = ["Mínimo", "Promedio", "Máximo"]
+
+resumen_colbach_puntajes = []
+
+for año, df in sus1923:
+
+    df_colbach = df[df['ASIG_FIN'].fillna('').str.startswith('B0')] # Asignacion final colbach
+
+    for clave, grupo in df_colbach.groupby('ASIG_FIN'):
+        nombre = clv_colbach.get(clave, "Desconocido")
+        
+        minimo = grupo['NGLOBAL'].min()
+        maximo = grupo['NGLOBAL'].max()
+        promedio = grupo['NGLOBAL'].mean()
+        
+        resumen_colbach_puntajes.append({
+            "Año": año,
+            "Nombre": nombre,
+            "Mínimo": minimo,
+            "Promedio": round(promedio, 2),
+            "Máximo": maximo
+        })
+
+df_colbach_puntajes = pd.DataFrame(resumen_colbach_puntajes)
+
+filas = []
+for nombre, grupo in df_colbach_puntajes.groupby("Nombre"):
+    for stat in estadisticas:
+        fila = {"Puntuaje": stat, "Nombre": nombre}
+        for year in [2019, 2020, 2021, 2022, 2023]:
+            valor = grupo.loc[grupo["Año"] == year, stat].values
+            fila[year] = valor[0] if len(valor) > 0 else None
+        filas.append(fila)
+
+datos_agrupados = pd.DataFrame(filas)
+datos_agrupados = datos_agrupados.sort_values(["Nombre", "Puntuaje"]).reset_index(drop=True)
+
+datos_agrupados.to_csv("Tablas/1.11.1 AciertosCompletosCol",index=False)
+
+datos_agrupados
+```
+
+### Aciertos para diferentes bachilleres
+
+```{python}
+#| label: cell-60
+#| echo: false
+#| warning: false
+#| message: false
+df_promedios_colbach = df_colbach_puntajes.groupby(["Nombre", "Año"])["Promedio"].mean().reset_index()
+
+df_promedios_pivot = df_promedios_colbach.pivot(index="Nombre", columns="Año", values="Promedio")
+
+planteles = df_promedios_pivot.index
+x = np.arange(len(planteles))
+
+plt.figure(figsize=(16, 14))
+
+colors = plt.cm.tab10.colors
+markers = ['o', 's', '^', 'D', 'v']
+
+for i, year in enumerate(df_promedios_pivot.columns):
+    y = df_promedios_pivot[year]
+    plt.plot(x, y, label=str(year), marker=markers[i % len(markers)],
+             color=colors[i % len(colors)], linewidth=2)
+    
+    for xi, yi in zip(x, y):
+        plt.text(xi + 0.1, yi + 0.5, f"{yi:.0f}", ha='center', va='bottom', color=colors[i % len(colors)], fontsize=10)
+
+plt.xticks(x, planteles, rotation=50)
+plt.xlabel("Plantel")
+plt.ylabel("Número de aciertos")
+plt.title("Comparación de puntajes promedio por plantel Bachilleres y año")
+plt.legend(title="Año")
+plt.grid(axis='y')
+plt.tight_layout()
+plt.show()
+```
+
+### Aciertos para el Bachilleres plantel 8
+
+```{python}
+#| label: cell-61
+#| echo: false
+#| warning: false
+#| message: false
+plantel8 = df_colbach_puntajes[df_colbach_puntajes["Nombre"] == "PLANTEL 8, CUAJIMALPA"]
+
+plantel8.to_csv("Tablas/1.11.2 AciertosCompletosCol8",index=False)
+
+años = [2019, 2020, 2021, 2022, 2023]
+x = np.arange(len(años)) 
+
+stats = ["Mínimo", "Promedio", "Máximo"]
+
+plt.figure(figsize=(12, 6))
+
+bar_width = 0.25  
+offset = 1
+
+for i, stat in enumerate(stats):
+    y = plantel8[stat].values
+
+    plt.barh(x + i*bar_width, y, height=bar_width, label=stat)
+
+    for xi, yi in zip(x, y):
+        plt.text(yi + offset, xi + i*bar_width, f"{yi:.0f}", va='center',
+                 fontsize=9)
+
+
+plt.yticks(x + bar_width, años)
+
+plt.ylabel("Año")
+plt.xlabel("Número de aciertos (NGLOBAL)")
+plt.title("Aciertos - Plantel 8, CUAJIMALPA")
+plt.legend(title="Estadística", bbox_to_anchor=(1.05, 1), loc="upper left") 
+plt.grid(axis='x')
+plt.tight_layout()
+plt.show()
+```
+
+#### Tabla 3.3 Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados
+
+```{python}
+#| label: cell-62
+#| echo: false
+#| warning: false
+#| message: false
+# Columnas para cada área de conocimiento
+cols_areas = ["PNHV","PNESP","PNHIS","PNGEO","PNFCE","PNHM","PNMAT","PNFIS","PNQUI","PNBIO"]
+
+nombres_areas = [
+    "Habilidad verbal",
+    "Español",
+    "Historia",
+    "Geografía",
+    "Formación cívica y ética",
+    "Habilidad matemática",
+    "Matemáticas",
+    "Física",
+    "Química",
+    "Biología"
+]
+
+
+resumen_areas = []
+
+for year, df in sus1923:
+
+    for clave, grupo in df.groupby("INST_FIN"):
+        nombre = clvinst.get(clave, "Desconocido")
+        fila = {"Nombre": nombre, "Año": year}
+        for col, area in zip(cols_areas, nombres_areas):
+            fila[area] = grupo[col].mean().round(2) if col in grupo.columns else None
+        resumen_areas.append(fila)
+
+datos_agrupados = pd.DataFrame(resumen_areas)
+
+datos_agrupados = datos_agrupados.sort_values(["Nombre", "Año"]).reset_index(drop=True)
+
+datos_agrupados.to_csv("Tablas/1.12 PorcentajeAreas",index=False)
+
+datos_agrupados
+```
+
+#### Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados (Bachilleres)
+
+```{python}
+#| label: cell-63
+#| echo: false
+#| warning: false
+#| message: false
+nombres_areas = [
+    "Habilidad verbal","Español","Historia","Geografía",
+    "Formación cívica y ética","Habilidad matemática","Matemáticas",
+    "Física","Química","Biología"
+]
+col_to_name = dict(zip(cols_areas, nombres_areas))
+
+
+datos_agrupados = colbach.groupby('AÑO')[cols_areas].mean().reset_index().sort_values('AÑO').round(2)
+
+datos_agrupados.to_csv("Tablas/1.12.1 PorcentajeAreasCol",index=False)
+
+datos_agrupados
+```
+
+```{python}
+#| label: cell-64
+#| echo: false
+#| warning: false
+#| message: false
+plt.figure(figsize=(16,8))
+
+años = [2019, 2020, 2021, 2022, 2023]
+y = np.arange(len(años)) 
+
+bar_height = 0.08 
+
+for i, col in enumerate(cols_areas):
+    if col in datos_agrupados.columns:
+        valores = datos_agrupados[col].values
+
+        posiciones = y + i*bar_height - (len(cols_areas)/2)*bar_height
+        bars = plt.barh(posiciones, valores, height=bar_height, label=col_to_name[col])
+
+        for py, val in zip(posiciones, valores):
+            plt.text(val + 0.1, py, str(val), va='center', fontsize=8, color=bars[0].get_facecolor())
+
+plt.title('Promedio de aciertos por área - Bachilleres (promedio anual)')
+plt.ylabel('Año')
+plt.xlabel('Promedio de aciertos')
+plt.yticks(y, años) 
+plt.legend(bbox_to_anchor=(1.05,1), loc='upper left')
+plt.grid(axis='x') 
+plt.tight_layout()
+plt.show()
+```
+
+### Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados (Bachilleres plantel 8)
+
+```{python}
+#| label: cell-65
+#| echo: false
+#| warning: false
+#| message: false
+cols_areas = ["NHV","NESP","NHIS","NGEO","NFCE","NHM","NMAT","NFIS","NQUI","NBIO"]
+nombres_areas = [
+    "Habilidad verbal","Español","Historia","Geografía",
+    "Formación cívica y ética","Habilidad matemática","Matemáticas",
+    "Física","Química","Biología"
+]
+col_to_name = dict(zip(cols_areas, nombres_areas))
+
+
+datos_agrupados = colbach8.groupby('AÑO')[cols_areas].mean().reset_index().sort_values('AÑO').round(2)
+
+datos_agrupados.to_csv("Tablas/1.12.2 PorcentajeAreasCol8",index=False)
+datos_agrupados
+```
+
+```{python}
+#| label: cell-66
+#| echo: false
+#| warning: false
+#| message: false
+plt.figure(figsize=(16,8))
+
+años = [2019, 2020, 2021, 2022, 2023]
+y = np.arange(len(años)) 
+
+bar_height = 0.08 
+
+for i, col in enumerate(cols_areas):
+    if col in datos_agrupados.columns:
+        valores = datos_agrupados[col].values
+
+        posiciones = y + i*bar_height - (len(cols_areas)/2)*bar_height
+        bars = plt.barh(posiciones, valores, height=bar_height, label=col_to_name[col])
+
+        for py, val in zip(posiciones, valores):
+            plt.text(val + 0.1, py, str(val), va='center', fontsize=8, color=bars[0].get_facecolor())
+
+plt.title('Promedio de aciertos por área - Bachilleres Plantel 8 (promedio anual)')
+plt.ylabel('Año')
+plt.xlabel('Promedio de aciertos')
+plt.yticks(y, años) 
+plt.legend(bbox_to_anchor=(1.05,1), loc='upper left')
+plt.grid(axis='x') 
+plt.tight_layout()
+plt.show()
+```
+
