@@ -1,5 +1,5 @@
 ---
-title: "Comipems Data Report"
+title: "Reporte de datos Comipems"
 format: pdf
 execute:
   echo: false
@@ -47,8 +47,6 @@ sus23 = pd.read_parquet("2023/bd_sustentantes_2023.parquet")
 enc23 = pd.read_parquet("2023/bd_sustentantes_2023_encuesta.parquet")
 opc23 = pd.read_parquet("2023/bd_opciones_educativas_2023.parquet")
 ```
-
-### Aspirantes registrados por año
 
 ```{python}
 #| label: cell-3
@@ -106,7 +104,7 @@ colbach8 = pd.concat(
 )
 ```
 
-### Aspirantes por año
+# Aspirantes registrados por año
 
 ```{python}
 #| label: cell-5
@@ -145,7 +143,14 @@ for bar in bars:
 plt.show()
 ```
 
-### Concursantes que no cumplieron algún requisito por año
+En esta gráfica, que nos describe el número de aspirantes registrados anualmente
+se puede observar que existió un máximo en el año 2019 con aproximadamente 310 mil,
+en los siguientes años se observa una disminución, donde la mayor es del 2020 al 2021 con una diferencia de
+aproximadamente 27 mil aspirantes menos y aumentando el número de aspirantes progresivamente hasta el 2023 
+con una diferencia de 23 mil aspirantes respecto al 2019.
+
+
+# Concursantes que no cumplieron algún requisito por año
 
 ```{python}
 #| label: cell-7
@@ -213,7 +218,13 @@ for i in range(len(x)):
 plt.show()
 ```
 
-### Concursantes que cumplieron todos los requisitos por año
+En esta gráfica se muestra el porcentaje de aspirantes que no presentaron el examen de selección respecto al total inscritos,
+podemos observar que en el año 2020 se observa el máximo, donde no se presentaron 16,433 aspirantes correspondiendo al 5.4% del total,
+mientras que los demás años este porcentaje se mantiene al rededor del 3.0%.
+Asimismo, aunque las bajas por infracción no son comunes se muestra que en el año 2021 fue su máximo y el único año donde más de 10 aspirantes
+fueron dados de baja.
+
+# Concursantes que cumplieron todos los requisitos por año
 
 ```{python}
 #| label: cell-9
@@ -284,7 +295,11 @@ for i in range(len(x)):
 plt.show()
 ```
 
-### Concursantes que obtuvieron un lugar por año
+En esta gráfica se muestran los porcentajes de aspirantes que obtuvieron los aciertos necesarios para alguna de sus opciones vs las que tienen derecho a otra opción.
+Se puede observar que el porcentaje de aspirantes asignadas no sufre cambios significativos, manteniendose entre 87% y 89% correspondiendo a 24 y 25 mil aspirantes,
+de la misma manera parece que se mantiene constante la cantidad de aspirantes que tienen derecho a otra opción, al rededor de 10-12%.
+
+# Concursantes que obtuvieron un lugar por año
 
 ```{python}
 #| label: cell-11
@@ -363,7 +378,13 @@ for i in range(len(x)):
 plt.show()
 ```
 
-#### Concursantes que obtuvieron un lugar por año (Colbach)
+En esta gráfica se muestran los aspirantes que fueron asignados a su primera opción, primeras 5 o en su defecto opciones posteriores (6 a 20).
+En el año 2021 se muestra un máximo con el 27.6% asignados a la primera opción y el 64% entre sus primeras 5, mientras que en el año 2019 a pesar de tener
+el mínimo en cuanto a estos dos grupos (22.5% y 57.7% respectivamente) tiene el máximo de aspirantes en opciones posteriores, con un 25.4%.
+El comportamiento general es que la mayoría es asignado a sus primeras 5 opciones, aumentando progresivamente hasta alcanzar el máximo en el 2021 y luego
+disminuyendo hasta alcanzar un 62.4% en el 2023.
+
+# Concursantes que obtuvieron un lugar por año (Colbach)
 
 ```{python}
 #| label: cell-14
@@ -415,7 +436,11 @@ for bar, pct in zip(bars, datos_agrupados_colbach["Asignados"]):
 plt.show()
 ```
 
-#### Concursantes que obtuvieron un lugar por año (Colbach8)
+Aquí podemos ver la cantidad de aspirantes que fueron asignados a algún Colbach, mostrando que apróximadamente se encuentran entre
+41-42 mil, representando apróximadamente del 14 al 15% de los aspirantes totales, mostrando un máximo porcentual en el año 2021 con el 15.59% (41,549 aspirantes)
+y un mínimo en 2019 con 13.65% (41,038 aspirantes).
+
+# Concursantes que obtuvieron un lugar por año (Colbach8)
 
 ```{python}
 #| label: cell-16
@@ -450,7 +475,11 @@ for bar, pct in zip(bars, datos_agrupados_colbach8["Asignados"]):
 plt.show()
 ```
 
-### Concursantes que obtuvieron un lugar según la escuela de procedencia por año
+Esta gráfica muestra los aspirantes asignados al colbach plantel 8 Cuajimalpa, donde se observa que varía entre 1100 y 1400, teniendo su máximo en
+2019 con 1346 aspirantes que corresponde al 0.45% del total de concursantes. Po otro lado se muestra un mínimo en el año 2020 con 1136 asignados correspondientes
+a un porcentaje del 0.40% respecto al total.
+
+# Concursantes que obtuvieron un lugar según la escuela de procedencia por año
 
 ```{python}
 #| label: cell-18
@@ -513,8 +542,11 @@ for i in range(len(x)):
 
 plt.show()
 ```
+En esta gráfica se muestra el tipo de escuela de procedencia de los aspirantes, se muestra que la mayor parte de los aspirantes provienen de escuelas públicas
+variando entre 91-92% del total correspondiendo entre 252 y 284 mil aspirantes, mientras que aquellos aspirantes que provienen de escuelas privaddas figuran entre el 7 y 8%
+correspondiendo a un total de entre 22 y 26 mil aspirantes.
 
-#### Concursantes que obtuvieron un lugar según la escuela de procedencia por año (Colbach)
+# Concursantes que obtuvieron un lugar según la escuela de procedencia por año (Colbach)
 
 ```{python}
 #| label: cell-21
@@ -611,8 +643,11 @@ for i in range(len(x)):
 
 plt.show()
 ```
+En cuanto a las escuelas de procedencia de los asignados en algún Cobach, se observa que del 2019 al 2021 se mantiene por encima del 94% correspondiendo a un aproximado de 
+39 mil aspirantes, por otro lado, en 2022 y 2023 se redujo a 91-92%, manteniendose en 38 mil estudiantes provenientes de escuelas públicas.
 
-#### Concursantes que obtuvieron un lugar según la escuela de procedencia por año (Colbach 8)
+
+# Concursantes que obtuvieron un lugar según la escuela de procedencia por año (Colbach 8)
 
 ```{python}
 #| label: cell-24
@@ -712,7 +747,10 @@ for i in range(len(x)):
 plt.show()
 ```
 
-### Concursantes divididos por sexo por año
+En cuanto a las escuelas de procedencia de los asignados en el Colbach plantel 8 existe una variación con un máximo de 95.7% de aspirantes provenientes de una escuela pública 
+(1087 aspirantes) para el 2020 y un mínimo de 88.7% (1023 aspirantes) para el 2022.
+
+# Concursantes divididos por sexo por año
 
 ```{python}
 #| label: cell-27
@@ -777,7 +815,10 @@ for i in range(len(x)):
 plt.show()
 ```
 
-#### Concursantes divididos por sexo por año (Colbach)
+De los aspirantes inscritos podemos observar que en el año 2019 el 49.95% eran mujeres tomando menos del 50% del total de los aspirantes, sin embargo, en años posteriores 
+se muestra una tendencía en que hay más mujeres inscritas, donde el máximo fue en 2021 tomando un 51.39% de los aspirantes totales correspondiendo a 141496 mujeres.
+
+# Concursantes divididos por sexo por año (Colbach)
 
 ```{python}
 #| label: cell-29
@@ -844,7 +885,10 @@ for i in range(len(x)):
 plt.show()
 ```
 
-#### Concursantes divididos por sexo por año (Colbach 8)
+Para el Colbach se muestra la tendencia del 2019 al 2023 en el que más de la mitad de los aspirantes asignados son mujeres, teniendo su mínimo en
+2019 con 50.19% que corresponde aproximadamente a 20600 aspirantes y un máximo en 2021 con 52.68% que corresponde a 21886 mujeres en comparación a 19663 hombres.
+
+# Concursantes divididos por sexo por año (Colbach 8)
 
 ```{python}
 #| label: cell-31
@@ -911,7 +955,11 @@ for i in range(len(x)):
 plt.show()
 ```
 
-### Promedio de aciertos por año
+En el Colbach plantel 8 Cuajimalpa se muestra una tendencia variante, donde en general en los años 2019, 2020 y 2022 se asignaron más aspirantes hombres que mujeres,
+mientras que en el 2021 y 2023 pasa lo contrario, donde la mayor diferencia se ve en el 2023 con 51.5% aspirantes mujeres y 48.5% hombres, correspondiendo a una diferencia
+de 35 aspirantes.
+
+# Promedio de aciertos por año
 
 ```{python}
 #| label: cell-33
@@ -955,7 +1003,10 @@ plt.grid(axis="y", linestyle="--", alpha=0.7)
 plt.show()
 ```
 
-#### Promedio de aciertos por año (Colbach) (Pendiente: Agregar varianza violin o bigote)
+Esta gráfica muestra el promedio de aciertos de los concursantes, varia entre los años entre 69 y 70, con un mínimo de 3 aciertos en 2019 y en los demás años de 0, además,
+se muestra el máximo con 128 en el 2019 y 2020, 126 en el 2021 y 127 en el 2022 y 2023
+
+# Promedio de aciertos por año (Colbach)
 
 ```{python}
 #| label: cell-35
@@ -998,7 +1049,10 @@ plt.grid(axis="y", linestyle="--", alpha=0.7)
 plt.show()
 ```
 
-#### Promedio de aciertos por año (Colbach 8)
+Los aspirantes asignados al Colbach muestran un promedio de 73 en el año 2019, 72 en 2020 y 68 del 2021 al 2023, con un mínimo de 19 en el año 2022, 
+variando de 21 a 23 los demás años y un máximo de 120 para el 2020, variando entre 116 y 117 los demás años.
+
+# Promedio de aciertos por año (Colbach 8)
 
 ```{python}
 #| label: cell-37
@@ -1041,7 +1095,11 @@ plt.grid(axis="y", linestyle="--", alpha=0.7)
 plt.show()
 ```
 
-### Número de opciones por institución
+En cuanto a los asignados en el Colbach plantel 8 se tiene un promedio de 73 aciertos para el 2019, 75 para el 2020 y 72 para los demás años. El mínimo de aciertos 
+fue en los años 2021, 2022 y 2023 con 61 aciertos, mientras que para el 2019 son 62 y en 2020 65. El máximo obtenido por estos aspirantes fue en los años
+2021 y 2023 con 109, bajando a 108 en 2019 y 2021 y de 107 para el 2020.
+
+# Número de opciones por institución
 
 ```{python}
 #| label: cell-39
@@ -1084,6 +1142,7 @@ clvinst ={
 }
 ```
 
+
 ```{python}
 #| label: cell-41
 #| echo: false
@@ -1120,7 +1179,10 @@ datos_agrupados.to_csv("Tablas/1.8 OpcionesEducativas",index=False)
 datos_agrupados
 ```
 
-### Tabla 1.1 Distribución de concursantes con base en su primera preferencia
+Esta tabla muestra la cantidad de opciones ofrecidas por cada institución, podemos ver que en general se mantuvieron la misma cantidad
+a lo largo de los años, los unicos que cambian son SE-PO, SE-CONALEP ESTADO DE MÉXICO y la Dirección general del Bachillerato
+
+# Distribución de concursantes con base en su primera preferencia
 
 ```{python}
 #| label: cell-42
@@ -1211,8 +1273,13 @@ ax.legend(title="Clave — Nombre", bbox_to_anchor=(1.02, 1), loc="upper left")
 plt.tight_layout()
 plt.show()
 ```
+Esta gráfica muestra la preferencia de los aspirantes para seleccionar su primera opción, en general se muestra que la UNAM se mantiene con un mayor porcentaje,
+teniendo un máximo de 58.5% en el 2023 correspondiendo a 175 mil aspirantes, seguido por el IPN con un máximo del 14.4% en el 2020 correspondiendo a 36 mil aspirantes,
+después el SE-PO que se muestra dividido, por un lado tiene un máximo en el 2022 con 6% correspondiendo aproximadamente a 17 mil aspirantes, continuando con UEMSTIS
+que tiene un máximo de 4.8% para el año 2022 correspondiendo a 14 mil aspirantes disminuyendo a menos de 10 mil aspirantes a partir de aquí para las demás instituciones y
+llegando a un mínimo de 48 aspirantes para el 2023 en la UEMSTAyCM CMM.
 
-#### Alumnos registrados en Bachilleres (Primera a decima opción)
+# Alumnos registrados en Bachilleres (Primera a decima opción)
 
 ```{python}
 #| label: cell-44
@@ -1314,7 +1381,11 @@ plt.tight_layout()
 plt.show()
 ```
 
-#### Alumnos registrados en plantel 8 (Primera a decima opción)
+Esta gráfica muestra el porcentaje de personas que colocaban como opción al Colbach de la primera hasta la décima y de la onceava en adelante, se puede observar
+que de los asignados más del 24% colocaban al Colbach en las opciones del 11-20, siguiendo por la septima opción con máx del 10%, luego la 6ta variando entre 9-10%,
+luego la octava con  menos del 10% al igual que la quinta, alcanzando un mínimo en la primera opción con un porcentaje mayor del 2% de los asignados.
+
+# Alumnos registrados en plantel 8 (Primera a decima opción)
 
 ```{python}
 #| label: cell-46
@@ -1415,6 +1486,10 @@ plt.tight_layout()
 plt.show()
 ```
 
+En esta gráfica se puede observar que, de los aspirantes asignados al Colbach plantel 8 la mayoría lo colocó entre las opciones del 11 al 20, alcanzando un máximo del 
+16.6% en el 2023% y después variando entre el 12 y 10% para las opciones 3,4 y 5, disminuyendo hasta al rededor del 5% para la opción 1, con un mínimo en 2019 de solo el 4.2%
+correspondiendo aproximadamente a 330 aspirantes.
+
 ```{python}
 #| label: cell-48
 #| echo: false
@@ -1459,71 +1534,7 @@ dict_sus = {
 }
 ```
 
-```{python}
-#| label: cell-50
-#| echo: false
-#| warning: false
-#| message: false
-def construir_tabla_categorias(dict_sus, dict_cct):
-    categorias = ["EdoMéx", "CDMX", "Extranjero", "Foráneo"]
-    años = [2019, 2020, 2021, 2022, 2023]
-    resultados = {}
-
-    for year in años:
-        sus = dict_sus[year].copy()
-        cct = dict_cct[year].copy()
-
-        cct_uni = cct.drop_duplicates(subset="CLAVECCT", keep="first")
-
-        mapa_entidad = cct_uni.set_index("CLAVECCT")["ENTIDAD"]
-
-        ent = sus["CVE_CCT"].map(mapa_entidad)
-
-        ent_num = pd.to_numeric(ent, errors="coerce")
-
-        def clasificar(x):
-            if pd.isna(x):
-                return "Extranjero"
-            x = int(x)
-            if x == 15:
-                return "EdoMéx"
-            if x == 9:
-                return "CDMX"
-            if 1 <= x <= 32:
-                return "Foráneo"
-            return "Desconocido"
-
-        categorias_series = ent_num.apply(clasificar)
-
-        conteo = categorias_series.value_counts().reindex(categorias, fill_value=0)
-        resultados[year] = conteo
-
-        total = int(conteo.sum())
-
-    datos_agrupados = pd.DataFrame(resultados).reindex(categorias)
-    return datos_agrupados
-
-datos_agrupados = construir_tabla_categorias(dict_sus, dict_cct)
-
-datos_agrupados
-```
-
-```{python}
-#| label: cell-51
-#| echo: false
-#| warning: false
-#| message: false
-sus = dict_sus[2021].copy()
-cct = dict_cct[2021].drop_duplicates("CLAVECCT")
-
-mapa = cct.set_index("CLAVECCT")["ENTIDAD"]
-ent = sus["CVE_CCT"].map(mapa)
-
-faltantes = sus.loc[ent.isna(), "CVE_CCT"].unique()
-print(len(faltantes), "CCT no encontrados en catálogo")
-```
-
-### Tabla 2.1 Distribución porcentual de concursantes que obtuvieron un lugar por opción educativa
+# Distribución porcentual de concursantes que obtuvieron un lugar por opción educativa
 
 ```{python}
 #| label: cell-52
@@ -1616,8 +1627,12 @@ ax.legend(title="Institución", bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
 plt.show()
 ```
+En esta gráfica se muestra el porcentaje de aspirantes que fueron asignados a cierta institución por año, se muestra que en todos los años se asigna un mayor porcentaje
+en SE-PO con un máximo de 17.1% en el 2019, al Bachilleres con un máximo de 16.9% para el año 2021 y seguidos por UEMSTIS con un máximo de 16.5% en el año 2023,
+UNAM con un máximo de 13.8% en 2021 y el IPN con un 10.7% en 2021. A partir de aquí los porcentajes son menores al 10% teniendo como mínimo la UAEM en la que se
+asignaron aproximadamente el 0.08% del total.
 
-#### Distribución porcentual de concursantes que obtuvieron un lugar por opción bachilleres
+# Distribución porcentual de concursantes que obtuvieron un lugar por opción bachilleres
 
 ```{python}
 #| label: cell-54
@@ -1728,6 +1743,10 @@ plt.tight_layout()
 plt.show()
 ```
 
+En esta gráfica se muestra el porcentaje de asignación a diferentes planteles del bachilleres, donde se observa que los que tienen una menor asignación (por debajo del
+5%) son el plantel 8 con un mínimo de 2.8%, el 11 con un mínimo de 2.4%, el 14 con menos del 2% y variando de 2 a 3 los planteles del 15 al 20. El plantel con una mayor Asignación
+es el 1, con un máximo de 8.9% de los aspirantes en el 2022.
+
 ```{python}
 #| label: cell-56
 #| echo: false
@@ -1736,7 +1755,7 @@ plt.show()
 
 ```
 
-#### Tabla 3.1 Promedio del número de aciertos obtenido por los sustentantes asignados por opción educativa
+# Promedio del número de aciertos obtenido por los sustentantes asignados por opción educativa
 
 ```{python}
 #| label: cell-57
@@ -1822,7 +1841,11 @@ plt.tight_layout()
 plt.show()
 ```
 
-### Aciertos obtenidos por los sustentantes asignados por opción bachillerato
+En esta gráfica se muestran la comparación del promedio de aciertos por institución y por año, donde se muestra que el Telebachillerato tiene un promedio menor, variando entre
+46 y 48 aciertos seguido por UEMSTAyCM variando de 52 a 54 al igual que CONALEP estado de méxico, mientras que la UNAM muestra el máximo de aciertos variando entre 102 y 104 aciertos
+seguido por la UAEM de 97 a 99 aciertos y el IPN de 92 a 95.
+
+# Aciertos obtenidos por los sustentantes asignados por opción bachillerato
 
 ```{python}
 #| label: cell-59
@@ -1871,6 +1894,10 @@ datos_agrupados.to_csv("Tablas/1.11.1 AciertosCompletosCol",index=False)
 datos_agrupados
 ```
 
+Esta gráfica muestra el promedio de aciertos por plantel de bachilleres, mostrando un mínimo en el plantel 11 entre 55 y 56 aciertos entre el 2021 y 2023, el plantel 12 
+con 56 a 57 aciertos estos mismos años, el plantel 10 con 58 a 59 estos mismos años. Por otro lado, se muestra un máximo de aciertos de 90 y 92 en el 2019 y 2020 para el plantel 2,
+el plantel 13 con 84 y 85 y para el plantel 17 de 81 y 82 para estos mismos años. Mostrando además que en los años 2019 y 2020 se tiene el mayor promedio en todos los planteles.
+
 ### Aciertos para diferentes bachilleres
 
 ```{python}
@@ -1908,7 +1935,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-### Aciertos para el Bachilleres plantel 8
+# Aciertos para el Bachilleres plantel 8
 
 ```{python}
 #| label: cell-61
@@ -1950,7 +1977,10 @@ plt.tight_layout()
 plt.show()
 ```
 
-#### Tabla 3.3 Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados
+En esta gráfica se muestra que el plantel 8 Cuajimalpa tuvo un mínimo de aciertos entre el 2021 y 2023 de 61, mientras que se muestra un máximo de hasta 109 aciertos para el
+2023 y 2021.
+
+# Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados
 
 ```{python}
 #| label: cell-62
@@ -1994,7 +2024,9 @@ datos_agrupados.to_csv("Tablas/1.12 PorcentajeAreas",index=False)
 datos_agrupados
 ```
 
-#### Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados (Bachilleres)
+Esta tabla muestra el porcentaje de aciertos obtenidos por área de conocimiento del examen por cada institución y años.
+
+# Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados (Bachilleres)
 
 ```{python}
 #| label: cell-63
@@ -2048,14 +2080,19 @@ plt.tight_layout()
 plt.show()
 ```
 
-### Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados (Bachilleres plantel 8)
+Esta gráfica muestra el porcentaje de aciertos obtenidos en el Bachilleres, podemos observar que en Mátematicas todos los años se tiene menos del 50% de aciertos mostrando
+un mínimo en el 2022 con 44.37%, resultando el área con los menores resultados, mientras que en habilidad mátematica siempre se muestra por encima del 50%, 
+llegando a un máximo de 63.35% en el 2019 siendo así el área con mejores resultados en cuanto a aciertos, las demás varian entre 50 y 60% del total de los aciertos de manera general,
+teniendo excepciones como en el 2019 en biología y 2020 en habilidad verbal superando el 60%.
+
+# Promedio de aciertos por habilidad o área del conocimiento obtenido por la totalidad de los concursantes asignados (Bachilleres plantel 8)
 
 ```{python}
 #| label: cell-65
 #| echo: false
 #| warning: false
 #| message: false
-cols_areas = ["NHV","NESP","NHIS","NGEO","NFCE","NHM","NMAT","NFIS","NQUI","NBIO"]
+cols_areas = ["PNHV","PNESP","PNHIS","PNGEO","PNFCE","PNHM","PNMAT","PNFIS","PNQUI","PNBIO"]
 nombres_areas = [
     "Habilidad verbal","Español","Historia","Geografía",
     "Formación cívica y ética","Habilidad matemática","Matemáticas",
@@ -2102,3 +2139,7 @@ plt.tight_layout()
 plt.show()
 ```
 
+En cuanto a los aciertos para el Colbach plantel 8 se muestra que existe un máximo en habilidad mátematica para el 2019 con un 65.1% de aciertos y manteniendose por encima del
+61% para todos los años exceptuando el 2023 en el que se muestra que se obtuvo el 57.9%, por otro lado, se observa un mínimo de 46.8% en mátematicas en el año 2022 variando al rededor
+del 47 y 48% para los demás años exceptuando el 2020 con un 51.6%, todas las demás se encuentran por encima del 50% manteniendose entre este y el 60%, con algunas excepciones como en
+habilidad verbal que tiene un máximo de 63.3% en el 2020, formación cívica y ética con 61.2% este mismo año y biología con el 60 y 60.7% en el 2019 y 2020.
